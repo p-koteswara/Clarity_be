@@ -20,6 +20,8 @@ app.add_middleware(
 # Include routers
 app.include_router(upload.router)
 app.include_router(chat.router)
+from app.routers.agent_chat import router as agent_router
+app.include_router(agent_router)
 
 @app.get("/")
 async def root():
