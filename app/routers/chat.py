@@ -1,24 +1,18 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 import google.generativeai as genai
-from app.embeddings import get_embedding
-from app.database import collection
+from app.database import search_documents
 
 router = APIRouter()
 
 class ChatRequest(BaseModel):
     question: str
+    doc_id: str | None = None
 
 @router.post("/chat")
 async def chat_with_document(request: ChatRequest):
-    question_embedding = get_embedding(request.question, task_type="retrieval_query")
-
-    results = collection.query(
-        query_embeddings=[question_embedding],
-        n_results=3
-    )
-
-    retrieved_chunks = results["documents"][0] if results["documents"] else []
+    # Search one document when doc_id is set; otherwise search all indexed docs
+    retrieved_chunks = search_documents(request.question, doc_id=request.doc_id)
     context = "\n\n".join(retrieved_chunks)
 
     prompt = f"""You are Clarity, an AI assistant that answers questions based on the provided document.

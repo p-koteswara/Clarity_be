@@ -6,8 +6,7 @@ from datetime import datetime
 
 from langchain_core.tools import tool
 
-from app.database import collection
-from app.embeddings import get_embedding
+from app.database import search_documents
 
 # Allowed operators for the calculate tool (no arbitrary eval).
 _BIN_OPS = {
@@ -39,15 +38,10 @@ def _safe_eval(node: ast.AST) -> float:
 
 
 @tool
-def search_clarity_docs(query: str) -> str:
+def search_clarity_docs(query: str, doc_id: str = "") -> str:
     """Search through the indexed document to find relevant information. Use this for any question about the uploaded document."""
     try:
-        query_embedding = get_embedding(query, task_type="retrieval_query")
-        results = collection.query(
-            query_embeddings=[query_embedding],
-            n_results=3,
-        )
-        chunks = results["documents"][0] if results.get("documents") else []
+        chunks = search_documents(query, doc_id=doc_id or None)
         if not chunks:
             return "No relevant information found in the indexed document."
         return "\n\n".join(chunks)
@@ -71,3 +65,23 @@ def get_current_datetime() -> str:
     """Get the current date and time"""
     now = datetime.now()
     return now.strftime("%A, %B %d, %Y at %I:%M:%S %p")
+
+
+@tool
+def search_web(query: str) -> str:
+    """Search the web for current information not found 
+    in the uploaded documents. Use this for general 
+    knowledge, recent events, or anything not in the 
+    documents."""
+    try:
+        from ddgs import DDGS
+        with DDGS() as ddgs:
+            results = list(ddgs.text(query, max_results=3))
+            if not results:
+                return "No results found"
+            output = []
+            for r in results:
+                output.append(f"Title: {r['title']}\n{r['body']}")
+            return "\n\n".join(output)
+    except Exception as e:
+        return f"Web search error: {str(e)}"

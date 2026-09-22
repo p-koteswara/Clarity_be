@@ -1,5 +1,6 @@
 """LangGraph ReAct agent wired to Clarity tools and thread memory."""
 
+from app.agent.tools import search_web
 import os
 from pathlib import Path
 
@@ -44,7 +45,7 @@ def _get_agent():
     # ReAct agent: LLM decides when to call tools; MemorySaver keeps history per thread.
     _agent = create_react_agent(
         llm,
-        tools=[search_clarity_docs, calculate, get_current_datetime],
+        tools=[search_clarity_docs, calculate, get_current_datetime, search_web],
         checkpointer=memory,
     )
     return _agent
