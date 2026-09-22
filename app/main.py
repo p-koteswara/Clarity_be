@@ -67,5 +67,5 @@ app.openapi = custom_openapi
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     traceback.print_exc()
-    return JSONResponse(status_code=500, detail=str(exc))
+    return JSONResponse(status_code=500, content = {"detail" : str(exc)})
 
