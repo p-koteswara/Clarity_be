@@ -24,6 +24,10 @@ from app.routers.agent_chat import router as agent_router
 app.include_router(agent_router)
 from app.routers.documents import router as documents_router
 app.include_router(documents_router)
+from app.routers.agent_stream import router as stream_router
+app.include_router(stream_router)
+from app.routers.eval import router as eval_router
+app.include_router(eval_router)
 
 @app.get("/")
 async def root():
