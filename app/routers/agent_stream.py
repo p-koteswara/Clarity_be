@@ -4,6 +4,7 @@ from fastapi.responses import StreamingResponse
 from langchain_core.messages import HumanMessage
 
 from app.agent.memory import get_config
+from pydantic import BaseModel
 
 try:
     from app.agent.agent import agent_executor
@@ -53,4 +54,20 @@ async def stream_agent_response(request: dict):
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
         },
+    )
+
+
+class StreamRequest(BaseModel):
+    question: str
+    thread_id: str = "default"
+
+@router.post("/agent/stream")
+async def stream_agent_response(request: StreamRequest):
+    return StreamingResponse(
+        stream_agent(request.question, request.thread_id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no"
+        }
     )
