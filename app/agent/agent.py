@@ -36,10 +36,12 @@ def _get_agent():
 
     # OpenRouter-hosted free model via the OpenAI-compatible ChatOpenAI client.
     llm = ChatOpenAI(
-        model="nvidia/nemotron-3.5-lightning:free",
+        model="liquid/lfm-2.5-2.6b:free",
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
         temperature=0,
+        request_timeout=60,
+        max_retries=2  
     )
 
     # ReAct agent: LLM decides when to call tools; MemorySaver keeps history per thread.
@@ -69,3 +71,5 @@ def run_agent(message: str, thread_id: str) -> str:
         return "The agent did not return a response."
     except Exception as exc:
         return f"Agent error: {exc}"
+
+
